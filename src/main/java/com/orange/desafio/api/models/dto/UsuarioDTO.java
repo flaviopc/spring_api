@@ -1,5 +1,6 @@
 package com.orange.desafio.api.models.dto;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -7,9 +8,11 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 import com.orange.desafio.api.models.Usuario;
+
+import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,12 +25,11 @@ public class UsuarioDTO {
     private String nome;
     @NotBlank(message = "Você precisa fornecer um e-mail!")
     @Email(message = "O e-mail informado é inválido!")
-    private String email;
-    @NotBlank(message = "Você precisa fornecer o CPF")
-    @Size(min = 11, max = 11, message = "O CPF deve ter 11 números")
+    private String email;       
+    @CPF(message = "O CPF informado é inválido")
     private String cpf;
-    @NotBlank(message = "Você precisa fornecer uma data válida!")
-    private String dataNascimento;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dataNascimento;
     private List<EnderecoDTO> enderecos;
 
     public UsuarioDTO(Usuario usuario) {

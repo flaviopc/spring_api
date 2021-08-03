@@ -1,5 +1,6 @@
 package com.orange.desafio.api.models;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -28,7 +29,7 @@ public class Usuario {
     @Column(nullable = false,unique = true)
     private String cpf;
     @Column(nullable = false)
-    private String dataNascimento;
+    private LocalDate dataNascimento;
 
     @OneToMany(mappedBy = "usuario")
     private List<Endereco> enderecos;

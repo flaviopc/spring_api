@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -43,7 +42,6 @@ public class UsuarioController {
     }
 
     @PostMapping("/{id}/enderecos")
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity adicionar(@PathVariable Long id, @RequestBody @Valid EnderecoDTO enderecoDTO) {
         Usuario usuario = usuarioRepository.findById(id).orElse(new Usuario());
         if (usuario.getId() == null)
@@ -58,7 +56,7 @@ public class UsuarioController {
     public ResponseEntity exibe(@PathVariable Long id) {
         Usuario usuario = usuarioRepository.findById(id).orElse(new Usuario());
         if (usuario.getId() == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado! Tente novamente");
         return ResponseEntity.ok().body(UsuarioDTO.converteEmDTO(usuario));
     }
 
