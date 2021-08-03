@@ -6,8 +6,8 @@ import com.orange.desafio.api.models.Endereco;
 import com.orange.desafio.api.models.Usuario;
 import com.orange.desafio.api.models.dto.EnderecoDTO;
 import com.orange.desafio.api.models.dto.UsuarioDTO;
-import com.orange.desafio.api.repositories.EnderecoRepository;
-import com.orange.desafio.api.repositories.UsuarioRepository;
+import com.orange.desafio.api.services.EnderecoService;
+import com.orange.desafio.api.services.UsuarioService;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -22,49 +22,42 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
+    
+    private UsuarioService usuarioService;
+    private EnderecoService enderecoService;
 
-    private UsuarioRepository usuarioRepository;
-    private EnderecoRepository enderecoRepository;
-
-    UsuarioController(EnderecoRepository enderecoRepository, UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-        this.enderecoRepository = enderecoRepository;
+    UsuarioController(UsuarioService usuarioService, EnderecoService enderecoService) {
+        this.usuarioService = usuarioService;
+        this.enderecoService = enderecoService;
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioDTO> adicionar(@RequestBody @Valid UsuarioDTO usuarioDTO) {             
+    public ResponseEntity<UsuarioDTO> adicionar(@RequestBody @Valid UsuarioDTO usuarioDTO) {
         try {
-            Usuario usuario = usuarioRepository.save(usuarioDTO.converteEmObjeto());
+            Usuario usuario = usuarioService.save(usuarioDTO.converteEmObjeto());
             return new ResponseEntity<>(UsuarioDTO.converteEmDTO(usuario), HttpStatus.CREATED);
         } catch (DataIntegrityViolationException cve) {
-            return new ResponseEntity(erroConstraint(cve.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(usuarioService.erroConstraint(cve.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping("/{id}/enderecos")
     public ResponseEntity adicionar(@PathVariable Long id, @RequestBody @Valid EnderecoDTO enderecoDTO) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(new Usuario());
+        Usuario usuario = usuarioService.findById(id);
         if (usuario.getId() == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado!");
         Endereco endereco = enderecoDTO.converteEmObjeto();
         endereco.setUsuario(usuario);
-        enderecoRepository.save(endereco);
+        enderecoService.save(endereco);
         return new ResponseEntity<>(UsuarioDTO.converteEmDTO(usuario), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity exibe(@PathVariable Long id) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(new Usuario());
+        Usuario usuario = usuarioService.findById(id);
         if (usuario.getId() == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado! Tente novamente");
         return ResponseEntity.ok().body(UsuarioDTO.converteEmDTO(usuario));
     }
 
-    private String erroConstraint(String msg) {
-        if (msg.contains("(EMAIL)"))
-            return "O e-mail informado já pertence a outro usuário!";
-        if (msg.contains("(CPF)"))
-            return "O CPF informado já pertence a outro usuário!";
-        return "Houve um erro ao tentar salvar!";
-    }
 }
