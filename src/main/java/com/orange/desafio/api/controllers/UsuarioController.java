@@ -2,10 +2,13 @@ package com.orange.desafio.api.controllers;
 
 import javax.validation.Valid;
 
+import com.orange.desafio.api.mapper.EnderecoMapper;
+import com.orange.desafio.api.mapper.UsuarioMapper;
 import com.orange.desafio.api.models.Endereco;
 import com.orange.desafio.api.models.Usuario;
 import com.orange.desafio.api.models.dto.EnderecoDTO;
 import com.orange.desafio.api.models.dto.UsuarioDTO;
+
 import com.orange.desafio.api.services.EnderecoService;
 import com.orange.desafio.api.services.UsuarioService;
 
@@ -34,8 +37,8 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<UsuarioDTO> adicionar(@RequestBody @Valid UsuarioDTO usuarioDTO) {
         try {
-            Usuario usuario = usuarioService.save(usuarioDTO.converteEmObjeto());
-            return new ResponseEntity<>(UsuarioDTO.converteEmDTO(usuario), HttpStatus.CREATED);
+            Usuario usuario = usuarioService.save(UsuarioMapper.INSTANCE.usuarioDtoToUsuario(usuarioDTO));
+            return new ResponseEntity<>(UsuarioMapper.INSTANCE.usuarioToUsuarioDTO(usuario), HttpStatus.CREATED);
         } catch (DataIntegrityViolationException cve) {
             return new ResponseEntity(usuarioService.erroConstraint(cve.getMessage()), HttpStatus.BAD_REQUEST);
         }
@@ -46,10 +49,10 @@ public class UsuarioController {
         Usuario usuario = usuarioService.findById(id);
         if (usuario.getId() == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado!");
-        Endereco endereco = enderecoDTO.converteEmObjeto();
+        Endereco endereco = EnderecoMapper.INSTANCE.enderecoDtoToEndereco(enderecoDTO);
         endereco.setUsuario(usuario);
         enderecoService.save(endereco);
-        return new ResponseEntity<>(UsuarioDTO.converteEmDTO(usuario), HttpStatus.CREATED);
+        return new ResponseEntity<>(UsuarioMapper.INSTANCE.usuarioToUsuarioDTO(usuario), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -57,7 +60,7 @@ public class UsuarioController {
         Usuario usuario = usuarioService.findById(id);
         if (usuario.getId() == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado! Tente novamente");
-        return ResponseEntity.ok().body(UsuarioDTO.converteEmDTO(usuario));
+        return ResponseEntity.ok().body(UsuarioMapper.INSTANCE.usuarioToUsuarioDTO(usuario));
     }
 
 }
